@@ -31,7 +31,7 @@ func getOrderedStructNames(m map[string]Struct) []string {
 }
 
 // Output generates code and writes to w.
-func Output(w io.Writer, g *Generator, pkg string) {
+func Output(w io.Writer, g *Generator, pkg string, skipValidationFlag bool) {
 	structs := g.Structs
 	aliases := g.Aliases
 
@@ -46,7 +46,28 @@ func Output(w io.Writer, g *Generator, pkg string) {
 
 	for _, k := range getOrderedStructNames(structs) {
 		s := structs[k]
-		if s.GenerateCode {
+		generateCode := false
+		if !skipValidationFlag {
+			for _, f := range s.Fields {
+				if f.Required {
+					generateCode = true
+					break
+				}
+			}
+
+			// No aditional properties are allowed
+			if s.AdditionalType == "false" {
+				generateCode = true
+			}
+		}
+
+		// If the struct has an additionalProperties we need to generate
+		// the Marshal/Unmarshal code for handling them
+		if s.AdditionalType != "" && s.AdditionalType != "false" {
+			generateCode = true
+		}
+
+		if generateCode {
 			emitMarshalCode(codeBuf, s, imports)
 			emitUnmarshalCode(codeBuf, s, imports)
 		}

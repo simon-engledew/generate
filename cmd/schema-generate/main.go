@@ -16,6 +16,7 @@ var (
 	p                     = flag.String("p", "main", "The package that the structs are created in.")
 	i                     = flag.String("i", "", "A single file path (used for backwards compatibility).")
 	schemaKeyRequiredFlag = flag.Bool("schemaKeyRequired", false, "Allow input files with no $schema key.")
+	skipValidationFlag    = flag.Bool("skipValidation", false, "Skip the generation of validation code in the generated Marhsal/Unmarshal methods")
 )
 
 func main() {
@@ -63,5 +64,5 @@ func main() {
 		}
 	}
 
-	generate.Output(w, g, *p)
+	generate.Output(w, g, *p, *skipValidationFlag)
 }
