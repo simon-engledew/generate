@@ -31,7 +31,7 @@ func getOrderedStructNames(m map[string]Struct) []string {
 }
 
 // Output generates code and writes to w.
-func Output(w io.Writer, g *Generator, pkg string) {
+func Output(w io.Writer, g *Generator, pkg string, skipValidation bool) {
 	structs := g.Structs
 	aliases := g.Aliases
 
@@ -46,9 +46,30 @@ func Output(w io.Writer, g *Generator, pkg string) {
 
 	for _, k := range getOrderedStructNames(structs) {
 		s := structs[k]
-		if s.GenerateCode {
-			emitMarshalCode(codeBuf, s, imports)
-			emitUnmarshalCode(codeBuf, s, imports)
+		generateCode := false
+		if !skipValidation {
+			for _, f := range s.Fields {
+				if f.Required {
+					generateCode = true
+					break
+				}
+			}
+
+			// No additional properties are allowed
+			if s.AdditionalType == "false" {
+				generateCode = true
+			}
+		}
+
+		// If the struct has an additionalProperties we need to generate
+		// the Marshal/Unmarshal code for handling them
+		if s.AdditionalType != "" && s.AdditionalType != "false" {
+			generateCode = true
+		}
+
+		if generateCode {
+			emitMarshalCode(codeBuf, s, imports, skipValidation)
+			emitUnmarshalCode(codeBuf, s, imports, skipValidation)
 		}
 	}
 
@@ -98,7 +119,7 @@ func Output(w io.Writer, g *Generator, pkg string) {
 	w.Write(codeBuf.Bytes())
 }
 
-func emitMarshalCode(w io.Writer, s Struct, imports map[string]bool) {
+func emitMarshalCode(w io.Writer, s Struct, imports map[string]bool, skipValidation bool) {
 	imports["bytes"] = true
 	fmt.Fprintf(w,
 		`
@@ -115,7 +136,7 @@ func (strct *%s) MarshalJSON() ([]byte, error) {
 			if f.JSONName == "-" {
 				continue
 			}
-			if f.Required {
+			if !skipValidation && f.Required {
 				fmt.Fprintf(w, "    // \"%s\" field is required\n", f.Name)
 				// currently only objects are supported
 				if strings.HasPrefix(f.Type, "*") {
@@ -178,7 +199,7 @@ func (strct *%s) MarshalJSON() ([]byte, error) {
 `)
 }
 
-func emitUnmarshalCode(w io.Writer, s Struct, imports map[string]bool) {
+func emitUnmarshalCode(w io.Writer, s Struct, imports map[string]bool, skipValidation bool) {
 	imports["encoding/json"] = true
 	// unmarshal code
 	fmt.Fprintf(w, `
@@ -226,7 +247,7 @@ func (strct *%s) UnmarshalJSON(b []byte) error {
 
 	// handle additional property
 	if s.AdditionalType != "" {
-		if s.AdditionalType == "false" {
+		if s.AdditionalType == "false" && !skipValidation {
 			// all unknown properties are not allowed
 			imports["fmt"] = true
 			fmt.Fprintf(w, `        default:
@@ -250,15 +271,17 @@ func (strct *%s) UnmarshalJSON(b []byte) error {
 	fmt.Fprintf(w, "    }\n")     // for
 
 	// check all Required fields were received
-	for _, fieldKey := range getOrderedFieldNames(s.Fields) {
-		f := s.Fields[fieldKey]
-		if f.Required {
-			imports["errors"] = true
-			fmt.Fprintf(w, `    // check if %s (a required property) was received
+	if !skipValidation {
+		for _, fieldKey := range getOrderedFieldNames(s.Fields) {
+			f := s.Fields[fieldKey]
+			if f.Required {
+				imports["errors"] = true
+				fmt.Fprintf(w, `    // check if %s (a required property) was received
     if !%sReceived {
         return errors.New("\"%s\" is required but was not present")
     }
 `, f.JSONName, f.JSONName, f.JSONName)
+			}
 		}
 	}
 

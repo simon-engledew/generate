@@ -198,9 +198,6 @@ func (g *Generator) processObject(name string, schema *Schema) (typ string, err 
 			Required:    contains(schema.Required, propKey),
 			Description: prop.Description,
 		}
-		if f.Required {
-			strct.GenerateCode = true
-		}
 		strct.Fields[f.Name] = f
 	}
 	// additionalProperties with typed sub-schema
@@ -233,7 +230,6 @@ func (g *Generator) processObject(name string, schema *Schema) (typ string, err 
 		}
 		strct.Fields[f.Name] = f
 		// setting this will cause marshal code to be emitted in Output()
-		strct.GenerateCode = true
 		strct.AdditionalType = subTyp
 	}
 	// additionalProperties as either true (everything) or false (nothing)
@@ -250,11 +246,9 @@ func (g *Generator) processObject(name string, schema *Schema) (typ string, err 
 			}
 			strct.Fields[f.Name] = f
 			// setting this will cause marshal code to be emitted in Output()
-			strct.GenerateCode = true
 			strct.AdditionalType = "interface{}"
 		} else {
 			// nothing
-			strct.GenerateCode = true
 			strct.AdditionalType = "false"
 		}
 	}
@@ -380,7 +374,6 @@ type Struct struct {
 	Description string
 	Fields      map[string]Field
 
-	GenerateCode   bool
 	AdditionalType string
 }
 
