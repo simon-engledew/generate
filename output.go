@@ -55,7 +55,7 @@ func Output(w io.Writer, g *Generator, pkg string, skipValidation bool) {
 				}
 			}
 
-			// No aditional properties are allowed
+			// No additional properties are allowed
 			if s.AdditionalType == "false" {
 				generateCode = true
 			}
