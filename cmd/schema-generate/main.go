@@ -3,8 +3,10 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"go/format"
 	"io"
 	"os"
 
@@ -64,5 +66,19 @@ func main() {
 		}
 	}
 
-	generate.Output(w, g, *p, *skipValidationFlag)
+	var buf bytes.Buffer
+
+	buf.Grow(16 * 1024)
+
+	generate.Output(&buf, g, *p, *skipValidationFlag)
+
+	formatted, err := format.Source(buf.Bytes())
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error formatting structs: ", err)
+	}
+
+	_, err = io.Copy(w, bytes.NewReader(formatted))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error writing output file: ", err)
+	}
 }
