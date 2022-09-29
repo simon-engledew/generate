@@ -1,4 +1,4 @@
-module github.com/daverlo/generate
+module github.com/simon-engledew/generate
 
 go 1.15
 

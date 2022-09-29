@@ -10,7 +10,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/daverlo/generate"
+	"github.com/simon-engledew/generate"
 )
 
 var (

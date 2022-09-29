@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	skipValidation "github.com/daverlo/generate/test/skipValidation_gen"
+	skipValidation "github.com/simon-engledew/generate/test/skipValidation_gen"
 	"gotest.tools/assert"
 )
 

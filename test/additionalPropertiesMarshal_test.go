@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	gen "github.com/daverlo/generate/test/additionalPropertiesMarshal_gen"
+	gen "github.com/simon-engledew/generate/test/additionalPropertiesMarshal_gen"
 )
 
 func TestApRefNoProp(t *testing.T) {

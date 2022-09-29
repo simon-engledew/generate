@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	abandoned "github.com/daverlo/generate/test/abandoned_gen"
+	abandoned "github.com/simon-engledew/generate/test/abandoned_gen"
 )
 
 func TestAbandoned(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	noSkipValidation "github.com/daverlo/generate/test/noSkipValidation_gen"
+	noSkipValidation "github.com/simon-engledew/generate/test/noSkipValidation_gen"
 
 	"github.com/stretchr/testify/assert"
 )

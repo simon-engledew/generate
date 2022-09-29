@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	example1 "github.com/daverlo/generate/test/example1_gen"
+	example1 "github.com/simon-engledew/generate/test/example1_gen"
 )
 
 func TestExample1(t *testing.T) {
